@@ -69,6 +69,10 @@
                                             <a href="{{ route('tilefiles.upload', $tilefile) }}" class="btn btn-sm btn-primary" target="_blank">
                                                 Upload Tile Photos
                                             </a>
+
+                                            <a href="{{ route('tilefiles.download', $tilefile) }}" class="btn btn-sm btn-primary">
+                                                Download
+                                            </a>
                                             
                                             <form action="{{ route('tilefiles.destroy', $tilefile->id) }}" method="POST" class="d-inline">
                                                 @csrf

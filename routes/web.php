@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,6 +24,8 @@ Auth::routes(['register' => false]);
 Route::middleware(['auth'])->group(function () {
     Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
     Route::resource('tilefiles', App\Http\Controllers\TilefileController::class);
+
+    Route::get('/tilefiles/{tilefile}/download', [App\Http\Controllers\TilefileController::class, 'download'])->name('tilefiles.download');
 });
 
 
