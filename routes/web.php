@@ -20,4 +20,11 @@ Route::get('/', function () {
 
 Auth::routes(['register' => false]);
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+    Route::resource('tilefiles', App\Http\Controllers\TilefileController::class);
+});
+
+
+Route::get('/tilefiles/{tilefile:uid}/upload', [App\Http\Controllers\TilefileController::class, 'upload'])->name('tilefiles.upload');
+Route::post('/tilefiles/{tilefile:uid}/upload', [App\Http\Controllers\TilefileController::class, 'uploadStore'])->name('tilefiles.upload.store');
