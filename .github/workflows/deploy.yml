@@ -62,9 +62,31 @@ jobs:
         name: app-build
         path: ${{ github.sha }}.tar.gz
       
+  ensure-directory-exist:
+    name: Ensure Directory Exist
+    runs-on: ubuntu-20.04
+    env:
+      DEPLOY_DIRECTORY: /home/${{ secrets.USERNAME }}/${{ secrets.DEPLOY_DIRECTORY }}
+    steps:
+    - name: Create directory if not exist
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.KEY }}
+        port: ${{ secrets.PORT }}
+        script: |
+          if [ ! -d ${{ env.DEPLOY_DIRECTORY }} ]; then
+            mkdir -p ${{ env.DEPLOY_DIRECTORY }}
+          fi
+          # empty directory
+          rm -rf ${{ env.DEPLOY_DIRECTORY }}/*
+          # Add permission
+          chmod 755 ${{ env.DEPLOY_DIRECTORY }}
+      
   release-on-server:
     name: Release on server
-    needs: create-deployment
+    needs: [create-deployment, ensure-directory-exist]
     runs-on: ubuntu-20.04
     env:
       DEPLOY_DIRECTORY: /home/${{ secrets.USERNAME }}/${{ secrets.DEPLOY_DIRECTORY }}
