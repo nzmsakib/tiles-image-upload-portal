@@ -17,7 +17,10 @@
                             <div class="row mb-3">
                                 <label for="tilefile" class="col-sm-auto col-form-label">Tiles Data File</label>
                                 <div class="col-sm">
-                                    <input class="form-control" type="file" id="tilefile" name="tilefile">
+                                    <input class="form-control" type="file" id="tilefile" name="tilefile" required accept=".xlsx">
+                                </div>
+                                <div class="col-sm">
+                                    <input class="form-control" type="text" name="reference" placeholder="Type a reference (optional)">
                                 </div>
                                 <div class="col-sm-auto">
                                     <button type="submit" class="btn btn-primary">Upload</button>
@@ -40,6 +43,9 @@
                                         Status
                                     </th>
                                     <th scope="col">
+                                        Reference
+                                    </th>
+                                    <th scope="col">
                                         Date Created
                                     </th>
                                     <th scope="col" class="border-end-0">
@@ -59,8 +65,13 @@
                                         <td>
                                             {{ $tilefile->name }}
                                         </td>
-                                        <td>
+                                        <td @class(['bg-opacity-50', 'text-bg-danger' => $tilefile->status == 'pending',
+                                                    'text-bg-warning' => $tilefile->status == 'processing',
+                                                    'text-bg-success' => $tilefile->status == 'completed'])>
                                             {{ $tilefile->status }}
+                                        </td>
+                                        <td>
+                                            {{ $tilefile->reference }}
                                         </td>
                                         <td>
                                             {{ $tilefile->created_at }}
@@ -71,7 +82,7 @@
                                             </a>
 
                                             <a href="{{ route('tilefiles.download', $tilefile) }}" class="btn btn-sm btn-primary">
-                                                Download
+                                                Create ZIP
                                             </a>
                                             
                                             <form action="{{ route('tilefiles.destroy', $tilefile->id) }}" method="POST" class="d-inline">

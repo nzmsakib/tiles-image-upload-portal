@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('path');
             $table->string('uid')->unique();
             $table->enum('status', ['pending', 'processing', 'completed'])->default('pending');
+            $table->string('reference')->nullable();
             $table->timestamps();
         });
     }

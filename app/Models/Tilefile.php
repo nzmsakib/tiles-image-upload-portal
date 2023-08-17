@@ -15,5 +15,6 @@ class Tilefile extends Model
         'path',
         'uid',
         'status',
+        'reference',
     ];
 }

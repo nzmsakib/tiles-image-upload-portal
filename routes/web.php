@@ -25,7 +25,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
     Route::resource('tilefiles', App\Http\Controllers\TilefileController::class);
 
-    Route::get('/tilefiles/{tilefile}/download', [App\Http\Controllers\TilefileController::class, 'download'])->name('tilefiles.download');
+    Route::get('/tilefiles/{tilefile}/make-zip', [App\Http\Controllers\TilefileController::class, 'download'])->name('tilefiles.download');
 });
 
 
