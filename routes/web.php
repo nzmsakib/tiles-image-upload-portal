@@ -16,18 +16,20 @@ use Illuminate\Support\Facades\Storage;
 */
 
 Route::get('/', function () {
-    return redirect(route('home'));
+    return view('welcome');
 });
 
 Auth::routes(['register' => false]);
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+    Route::middleware(['role:admin'])->group(function () {
+        Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+        Route::resource('companies', App\Http\Controllers\CompanyController::class);
+    });
     Route::resource('tilefiles', App\Http\Controllers\TilefileController::class);
 
     Route::get('/tilefiles/{tilefile}/make-zip', [App\Http\Controllers\TilefileController::class, 'download'])->name('tilefiles.download');
+
+    Route::get('/tilefiles/{tilefile:uid}/upload', [App\Http\Controllers\TilefileController::class, 'upload'])->name('tilefiles.upload');
+    Route::post('/tilefiles/{tilefile:uid}/upload', [App\Http\Controllers\TilefileController::class, 'uploadStore'])->name('tilefiles.upload.store');
 });
-
-
-Route::get('/tilefiles/{tilefile:uid}/upload', [App\Http\Controllers\TilefileController::class, 'upload'])->name('tilefiles.upload');
-Route::post('/tilefiles/{tilefile:uid}/upload', [App\Http\Controllers\TilefileController::class, 'uploadStore'])->name('tilefiles.upload.store');
