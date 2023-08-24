@@ -1,0 +1,17 @@
+1. Login page is fine.
+2. First page after login should be tilefiles.
+3. Excel files are assigned to company ID.
+Each company may have multiple files to upload photos.
+They will see a dashboard of files listing.
+(Company data needed: Email, ID, Name)
+4. Multiple files for tile images:
+tile 1 F1
+tile 1 F2
+tile 1 F3
+Extensions: jpg, png, and psd(photoshop icon for preview).
+Preview should show all files.
+Each file will have cross button to remove it.
+Store each tile information (each row of excel in each row in the database) with image as comma separeted strings
+automatically upload images after selecting them.
+Number of pending items on the top of the page.
+Tests for files greater than 15MB.

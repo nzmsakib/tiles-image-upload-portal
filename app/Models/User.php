@@ -21,6 +21,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'cid',
         'password',
     ];
 
@@ -42,4 +43,14 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function created_tilefiles()
+    {
+        return $this->hasMany(Tilefile::class, 'created_by');
+    }
+
+    public function assigned_tilefiles()
+    {
+        return $this->hasMany(Tilefile::class, 'assigned_to');
+    }
 }

@@ -15,7 +15,8 @@ return new class extends Migration
     {
         Schema::create('tilefiles', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained();
+            $table->foreignId('created_by')->constrained('users');
+            $table->foreignId('assigned_to')->nullable()->constrained('users');
             $table->string('name');
             $table->string('path');
             $table->string('uid')->unique();

@@ -81,11 +81,18 @@
                 </div>
                 <div class="offcanvas-body p-3">
                     <ul class="nav flex-column nav-pills">
+                        @role('admin')
                         <li class="nav-item">
                             <a href="{{ route('home') }}" @class(['nav-link', 'active' => request()->routeIs('home')])>
                                 Dashboard
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a href="{{ route('companies.index') }}" @class(['nav-link', 'active' => request()->routeIs('companies.index')])>
+                                Company List
+                            </a>
+                        </li>
+                        @endrole
                         <li class="nav-item">
                             <a href="{{ route('tilefiles.index') }}" @class(['nav-link', 'active' => request()->routeIs('tilefiles.index')])>
                                 Tilefiles

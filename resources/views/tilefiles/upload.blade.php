@@ -19,111 +19,66 @@
                                 <table id="tilePhotoUploadTable"
                                     class="table table-hover text-nowrap nowrap cell-border table-bordered">
                                     <thead>
-                                        @foreach ($columnNames as $item)
-                                            <th scope="col">
-                                                {{ $item }}
-                                            </th>
-                                        @endforeach
                                         <th scope="col">
-                                            Tile Image
+                                            Serial Number
                                         </th>
                                         <th scope="col">
-                                            Map Image
+                                            Tile Name
+                                        </th>
+                                        <th scope="col">
+                                            Tile Size
+                                        </th>
+                                        <th scope="col">
+                                            Tile Finish
+                                        </th>
+                                        <th scope="col">
+                                            Tile Image Needed
+                                        </th>
+                                        <th scope="col">
+                                            Map Image Needed
                                         </th>
                                     </thead>
                                     <tbody>
-                                        @forelse ($data as $tilePhotoUpload)
-                                            <tr>
-                                                @foreach ($columnNames as $item)
-                                                    <td>
-                                                        {{ $tilePhotoUpload[$loop->index] }}
+                                        @forelse ($tiles as $tile)
+                                            <tr class="position-relative">
+                                                <td>
+                                                    {{ $tile->serial }}
+                                                </td>
+                                                <td>
+                                                    {{ $tile->tilename }}
+                                                </td>
+                                                <td>
+                                                    {{ $tile->size }}
+                                                </td>
+                                                <td>
+                                                    {{ $tile->finish }}
+                                                </td>
+                                                <td>
+                                                    {{ $tile->tile_image_needed }}
+                                                </td>
+                                                <td>
+                                                    {{ $tile->map_image_needed }}
+                                                </td>
+                                                <a class="stretched-link" data-bs-toggle="collapse"
+                                                    href="#row-collapse-{{ $tile->id }}" role="button"
+                                                    aria-expanded="false"
+                                                    aria-controls="row-collapse-{{ $tile->id }}"></a>
+                                            </tr>
+                                            <tr class="collapse bg-success" id="row-collapse-{{ $tile->id }}">
+                                                @if ($tile->tile_image_needed && $tile->map_image_needed)
+                                                    <td colspan="50%">
+                                                        Tile Images
                                                     </td>
-                                                @endforeach
-                                                @if ($tilePhotoUpload[count($columnNames)])
-                                                    <td class="text-bg-success bg-opacity-25">
-                                                        <div
-                                                            class="d-flex align-items-center justify-content-between gap-2">
-                                                            @if ($tilePhotoUpload[count($columnNames) - 2] == 'Yes')
-                                                                <a href="{{ $tilePhotoUpload[count($columnNames)] }}"
-                                                                    target="_blank">
-                                                                    <img src="{{ $tilePhotoUpload[count($columnNames)] }}"
-                                                                        alt="tileimage" height="60" class="preview">
-                                                                </a>
-
-                                                                <a href="{{ asset('images/upload.png') }}"
-                                                                    class="upload-link">
-                                                                    <img src="{{ asset('images/upload.png') }}"
-                                                                        alt="upload btn" width="30">
-                                                                </a>
-                                                                <input type="file" accept=".jpg"
-                                                                    name="tileimage-{{ $tilePhotoUpload[0] }}"
-                                                                    class="form-control form-control-sm d-none">
-                                                            @endif
-                                                        </div>
+                                                    <td colspan="50%">
+                                                        Map Images
                                                     </td>
-                                                @else
-                                                    <td @class(['position-relative', 'text-bg-danger bg-opacity-25' => $tilePhotoUpload[count($columnNames) - 2] == 'Yes'])>
-                                                        <div
-                                                            class="d-flex align-items-center justify-content-center gap-2">
-                                                            @if ($tilePhotoUpload[count($columnNames) - 2] == 'Yes')
-                                                                <a href="#" target="_blank">
-                                                                    <img src="#" alt="tileimage" height="60" class="preview">
-                                                                </a>
-
-                                                                <a href="{{ asset('images/upload.png') }}"
-                                                                    class="upload-link stretched-link">
-                                                                    <img src="{{ asset('images/upload.png') }}"
-                                                                        alt="upload btn" width="30">
-                                                                </a>
-                                                                <input type="file" accept=".jpg"
-                                                                    name="tileimage-{{ $tilePhotoUpload[0] }}"
-                                                                    class="form-control form-control-sm d-none">
-                                                            @endif
-                                                        </div>
+                                                @elseif ($tile->tile_image_needed)
+                                                    <td colspan="100%">
+                                                        Tile Images
                                                     </td>
-                                                @endif
-
-                                                @if ($tilePhotoUpload[count($columnNames) + 1])
-                                                    <td class="text-bg-success bg-opacity-25">
-                                                        <div
-                                                            class="d-flex align-items-center justify-content-between gap-2">
-                                                            @if ($tilePhotoUpload[count($columnNames) - 1] == 'Yes')
-                                                                <a href="{{ $tilePhotoUpload[count($columnNames) + 1] }}"
-                                                                    target="_blank">
-                                                                    <img src="{{ $tilePhotoUpload[count($columnNames) + 1] }}"
-                                                                        alt="tilemap" height="60" class="preview">
-                                                                </a>
-
-                                                                <a href="{{ asset('images/upload.png') }}"
-                                                                    class="upload-link">
-                                                                    <img src="{{ asset('images/upload.png') }}"
-                                                                        alt="upload btn" width="30">
-                                                                </a>
-                                                                <input type="file" accept=".jpg"
-                                                                    name="tilemap-{{ $tilePhotoUpload[0] }}"
-                                                                    class="form-control form-control-sm d-none">
-                                                            @endif
-                                                        </div>
-                                                    </td>
-                                                @else
-                                                    <td @class(['position-relative', 'text-bg-danger bg-opacity-25' => $tilePhotoUpload[count($columnNames) - 1] == 'Yes'])>
-                                                        <div
-                                                            class="d-flex align-items-center justify-content-center gap-2">
-                                                            @if ($tilePhotoUpload[count($columnNames) - 1] == 'Yes')
-                                                                <a href="#" target="_blank">
-                                                                    <img src="#" alt="tilemap" height="60" class="preview">
-                                                                </a>
-
-                                                                <a href="{{ asset('images/upload.png') }}"
-                                                                    class="upload-link stretched-link">
-                                                                    <img src="{{ asset('images/upload.png') }}"
-                                                                        alt="upload btn" width="30">
-                                                                </a>
-                                                                <input type="file" accept=".jpg"
-                                                                    name="tilemap-{{ $tilePhotoUpload[0] }}"
-                                                                    class="form-control form-control-sm d-none">
-                                                            @endif
-                                                        </div>
+                                                @elseif ($tile->map_image_needed)
+                                                    <td colspan="100%">
+                                                        Map Images
                                                     </td>
                                                 @endif
                                             </tr>
@@ -137,10 +92,7 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <div class="mb-3 text-end">
-                                <button type="submit" class="btn btn-primary">Upload</button>
-                            </div>
-                            {{ $data->links() }}
+                            {{ $tiles->links() }}
                         </form>
                     </div>
                 </div>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Tilefile;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Storage;
@@ -27,7 +28,21 @@ class TilefileController extends Controller
     public function index()
     {
         //
-        $tilefiles = Tilefile::all();
+        $user = User::find(auth()->user()->id);
+        $tilefiles = $user->created_tilefiles();
+        if ($user->hasRole('company')) {
+            $tilefiles = $user->assigned_tilefiles();
+        }
+
+        if (request()->has('assignee')) {
+            $tilefiles = $tilefiles->where('assigned_to', request()->assignee);
+        }
+
+        if (request()->has('creator')) {
+            $tilefiles = $tilefiles->where('created_by', request()->creator);
+        }
+        
+        $tilefiles = $tilefiles->paginate(2);
 
         return view('tilefiles.index', compact('tilefiles'));
     }
@@ -51,27 +66,49 @@ class TilefileController extends Controller
     public function store(Request $request)
     {
         //
-        // Validate an excel file is uploaded
-        $request->validate([
-            'tilefile' => 'required|file|mimes:xlsx,xls',
-        ]);
+        // dd($request);
+        $assinee_id = $request->user;
+        $tilefiles = $request->file('tilefiles');
 
-        // Get the file name
-        $filename = $request->file('tilefile')->getClientOriginalName();
-        $fileUid = uniqid();
-        $fileExt = $request->file('tilefile')->getClientOriginalExtension();
+        foreach ($tilefiles as $tf) {
+            // Get the file name
+            $filename = $tf->getClientOriginalName();
+            $fileUid = uniqid();
+            $fileExt = $tf->getClientOriginalExtension();
 
-        // Store the file
-        $path = $request->file('tilefile')->storeAs('public/tilefiles/' . $fileUid, $filename);
+            // Store the file
+            $path = $tf->storeAs('public/tilefiles/' . $fileUid, $filename);
 
-        // Create a new tilefile record
-        $tilefile = Tilefile::create([
-            'name' => $filename,
-            'uid' => $fileUid,
-            'path' => $path,
-            'user_id' => auth()->user()->id,
-            'reference' => $request->reference ?? null,
-        ]);
+            $user = User::find(auth()->user()->id);
+            // Create a new tilefile record
+            $tilefile = Tilefile::create([
+                'name' => $filename,
+                'uid' => $fileUid,
+                'path' => $path,
+                'created_by' => $user->id,
+                'assigned_to' => $assinee_id,
+                'reference' => $request->reference ?? null,
+            ]);
+
+            $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+            $spreadsheet = $reader->load($tf);
+            $worksheet = $spreadsheet->getActiveSheet();
+
+            foreach ($worksheet->getRowIterator(2) as $row) {
+                $rowData = [];
+                foreach ($row->getCellIterator() as $cell) {
+                    $rowData[] = $cell->getValue();
+                }
+                $tile = $tilefile->tiles()->create([
+                    'serial' => $rowData[0],
+                    'tilename' => $rowData[1],
+                    'size' => $rowData[2],
+                    'finish' => $rowData[3],
+                    'tile_image_needed' => $rowData[4] == 'Yes' ? true : false,
+                    'map_image_needed' => $rowData[5] == 'Yes' ? true : false,
+                ]);
+            }
+        }
 
         return redirect()->route('tilefiles.index')->with('status', 'Tilefile uploaded successfully');
     }
@@ -145,66 +182,11 @@ class TilefileController extends Controller
     public function upload(Request $request, Tilefile $tilefile)
     {
         //
-        // read the excel file
-        $path = storage_path('app/' . $tilefile->path);
-        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
-        $spreadsheet = $reader->load($path);
-        $worksheet = $spreadsheet->getActiveSheet();
-
-        $page = $request->page ?? 1;
         $perPage = 2;
 
-        // Get the column names
-        $columnNames = [];
-        foreach ($worksheet->getRowIterator(1, 1) as $row) {
-            foreach ($row->getCellIterator() as $cell) {
-                $columnNames[] = $cell->getValue();
-            }
-        }
+        $tiles = $tilefile->tiles()->paginate($perPage);
 
-        $totalRequired = 0;
-        $totalUploaded = 0;
-
-        // Get the data
-        $data = [];
-        foreach ($worksheet->getRowIterator(2+($page-1)*$perPage, $page*$perPage+1) as $row) {
-            $rowData = [];
-            foreach ($row->getCellIterator() as $cell) {
-                $rowData[] = $cell->getValue();
-            }
-            // Check if previously uploaded and add a flag
-            $tileImagePath = storage_path('app/public/tilefiles/' . $tilefile->uid . '/' . $tilefile->uid . '/' . $rowData[2] . '/' . $rowData[3] . '/' . $rowData[1] . '/' . $rowData[1] . '.jpg');
-            $tileMapsPath = storage_path('app/public/tilefiles/' . $tilefile->uid . '/' . $tilefile->uid . '/' . $rowData[2] . '/' . $rowData[3] . '/' . $rowData[1] . '/MAPS/' . $rowData[1] . '.jpg');
-            if (file_exists($tileImagePath)) {
-                $totalUploaded++;
-            }
-            if (file_exists($tileMapsPath)) {
-                $totalUploaded++;
-            }
-            if ($rowData[count($rowData)-2] == 'Yes') {
-                $totalRequired++;
-            }
-            if ($rowData[count($rowData)-1] == 'Yes') {
-                $totalRequired++;
-            }
-            $rowData[] = file_exists($tileImagePath) ? asset('storage/tilefiles/' . $tilefile->uid . '/' . $tilefile->uid . '/' . $rowData[2] . '/' . $rowData[3] . '/' . $rowData[1] . '/' . $rowData[1] . '.jpg') : null;
-            $rowData[] = file_exists($tileMapsPath) ? asset('storage/tilefiles/' . $tilefile->uid . '/' . $tilefile->uid . '/' . $rowData[2] . '/' . $rowData[3] . '/' . $rowData[1] . '/MAPS/' . $rowData[1] . '.jpg') : null;
-
-            // dd($rowData);
-
-            $data[] = $rowData;
-        }
-
-        // Get the number of rows and columns
-        $numRows = count($data);
-        $numCols = count($columnNames);
-        $totalRows = $worksheet->getHighestRow() - 1;
-        $lastPage = ceil($totalRows / $perPage);
-        $data = new LengthAwarePaginator($data, $totalRows, $perPage, $page, [
-            'path' => route('tilefiles.upload', $tilefile),
-        ]);
-
-        return view('tilefiles.upload', compact('tilefile', 'columnNames', 'data', 'numRows', 'numCols', 'totalRows', 'page', 'perPage', 'lastPage', 'totalRequired', 'totalUploaded'));
+        return view('tilefiles.upload', compact('tilefile', 'tiles'));
     }
 
     /**
