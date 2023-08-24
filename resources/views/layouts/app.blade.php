@@ -15,6 +15,8 @@
     <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
 
     @vite(['resources/js/app.js'])
+
+    @stack('head')
 </head>
 
 <body>
@@ -107,6 +109,8 @@
             </div>
         </main>
     </div>
+
+    @stack('foot')
 </body>
 
 </html>

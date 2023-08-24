@@ -16,7 +16,7 @@ class CompanyController extends Controller
     {
         //
         $user = User::find(auth()->user()->id);
-        $companies = User::where('id', '!=', $user->id)->paginate(2);
+        $companies = User::where('id', '!=', $user->id)->orderBy('id', 'desc')->paginate(2);
 
         return view('companies.index', compact('companies'));
     }

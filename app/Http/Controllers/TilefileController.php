@@ -42,7 +42,7 @@ class TilefileController extends Controller
             $tilefiles = $tilefiles->where('created_by', request()->creator);
         }
         
-        $tilefiles = $tilefiles->paginate(2);
+        $tilefiles = $tilefiles->orderBy('created_at', 'desc')->paginate(2);
 
         return view('tilefiles.index', compact('tilefiles'));
     }

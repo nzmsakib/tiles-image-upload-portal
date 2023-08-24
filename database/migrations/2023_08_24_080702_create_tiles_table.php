@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('tiles', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tilefile_id')->constrained();
+            $table->foreignId('tilefile_id')->constrained()->onDelete('cascade');
             $table->integer('serial');
             $table->string('tilename');
             $table->string('size');

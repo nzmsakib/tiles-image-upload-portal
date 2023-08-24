@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
+import {viteStaticCopy} from 'vite-plugin-static-copy';
 import path from 'path'
 
 export default defineConfig({
@@ -11,6 +12,14 @@ export default defineConfig({
             ],
             refresh: true,
         }),
+        viteStaticCopy({
+            targets: [
+                {
+                    src: 'node_modules/bootstrap-fileinput',
+                    dest: 'vendor',
+                }
+            ]
+        })
     ],
     resolve: {
         alias: {

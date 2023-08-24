@@ -1,9 +1,13 @@
 @extends('layouts.app')
 
+@pushOnce('head')
+    <x-scripts.bs-fileinput-config />
+@endPushOnce
+
 @section('content')
     <div class="container-fluid">
         <div class="row justify-content-center">
-            <div class="col-md-8">
+            <div class="col-md-10">
                 <div class="card">
                     <div class="card-body">
                         @if (session('status'))
@@ -40,7 +44,7 @@
                                     </thead>
                                     <tbody>
                                         @forelse ($tiles as $tile)
-                                            <tr class="position-relative">
+                                            <tr @class(["position-relative", "text-bg-danger" => $tile->tile_images != ''])>
                                                 <td>
                                                     {{ $tile->serial }}
                                                 </td>
@@ -54,31 +58,43 @@
                                                     {{ $tile->finish }}
                                                 </td>
                                                 <td>
-                                                    {{ $tile->tile_image_needed }}
+                                                    {{ $tile->tile_image_needed ? 'Yes' : 'No' }}
                                                 </td>
                                                 <td>
-                                                    {{ $tile->map_image_needed }}
+                                                    {{ $tile->map_image_needed ? 'Yes' : 'No' }}
+                                                    <a class="stretched-link"
+                                                        data-bs-toggle="collapse" href="#row-collapse-{{ $tile->id }}"
+                                                        role="button" aria-expanded="false"
+                                                        aria-controls="row-collapse-{{ $tile->id }}"></a>
                                                 </td>
-                                                <a class="stretched-link" data-bs-toggle="collapse"
-                                                    href="#row-collapse-{{ $tile->id }}" role="button"
-                                                    aria-expanded="false"
-                                                    aria-controls="row-collapse-{{ $tile->id }}"></a>
                                             </tr>
-                                            <tr class="collapse bg-success" id="row-collapse-{{ $tile->id }}">
+                                            <tr class="collapse" id="row-collapse-{{ $tile->id }}">
                                                 @if ($tile->tile_image_needed && $tile->map_image_needed)
-                                                    <td colspan="50%">
-                                                        Tile Images
+                                                    <td colspan="3">
+                                                        <div class="text-center">
+                                                            Upload Tile Image
+                                                        </div>
+                                                        <input type="file" class="bs-fileinput" multiple />
                                                     </td>
-                                                    <td colspan="50%">
-                                                        Map Images
+                                                    <td colspan="3">
+                                                        <div class="text-center">
+                                                            Upload Map Image
+                                                        </div>
+                                                        <input type="file" class="bs-fileinput" multiple />
                                                     </td>
                                                 @elseif ($tile->tile_image_needed)
                                                     <td colspan="100%">
-                                                        Tile Images
+                                                        <div class="text-center">
+                                                            Upload Tile Image
+                                                        </div>
+                                                        <input type="file" class="bs-fileinput" multiple />
                                                     </td>
                                                 @elseif ($tile->map_image_needed)
                                                     <td colspan="100%">
-                                                        Map Images
+                                                        <div class="text-center">
+                                                            Upload Map Image
+                                                        </div>
+                                                        <input type="file" class="bs-fileinput" multiple />
                                                     </td>
                                                 @endif
                                             </tr>
@@ -100,3 +116,7 @@
         </div>
     </div>
 @endsection
+
+@pushOnce('foot')
+    <x-scripts.bs-fileinput-common />
+@endPushOnce
