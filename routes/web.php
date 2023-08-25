@@ -16,7 +16,8 @@ use Illuminate\Support\Facades\Storage;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    // return view('welcome');
+    return redirect(route('login'));
 });
 
 Auth::routes(['register' => false]);
@@ -27,6 +28,9 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('companies', App\Http\Controllers\CompanyController::class);
     });
     Route::resource('tilefiles', App\Http\Controllers\TilefileController::class);
+    Route::post('/tiles/{tile}/images', [App\Http\Controllers\TileController::class, 'updateImages'])->name('tiles.update.images');
+    Route::post('/tiles/{tile}/maps', [App\Http\Controllers\TileController::class, 'updateMaps'])->name('tiles.update.maps');
+    Route::post('/tiles/{tile}/destroy-imagemap', [App\Http\Controllers\TileController::class, 'destroyImageMap'])->name('tiles.destroy.imagemap');
 
     Route::get('/tilefiles/{tilefile}/make-zip', [App\Http\Controllers\TilefileController::class, 'download'])->name('tilefiles.download');
 

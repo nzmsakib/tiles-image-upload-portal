@@ -13,15 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('tiles', function (Blueprint $table) {
+        Schema::create('files', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tilefile_id')->constrained()->onDelete('cascade');
-            $table->integer('serial');
-            $table->string('tilename');
-            $table->string('size');
-            $table->string('finish');
-            $table->boolean('tile_image_needed')->default(true);
-            $table->boolean('map_image_needed')->default(true);
+            $table->foreignId('tile_id')->constrained()->onDelete('cascade');
+            $table->string('name');
+            $table->enum('type', ['image', 'map']);
+            $table->string('path');
             $table->timestamps();
         });
     }
@@ -33,6 +30,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('tiles');
+        Schema::dropIfExists('files');
     }
 };

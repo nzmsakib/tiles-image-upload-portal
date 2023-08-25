@@ -1,0 +1,23 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class File extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'name',
+        'type',
+        'tile_id',
+        'path',
+    ];
+
+    public function tile()
+    {
+        return $this->belongsTo(Tile::class);
+    }
+}

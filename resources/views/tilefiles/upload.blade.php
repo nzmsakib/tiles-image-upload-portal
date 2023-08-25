@@ -44,7 +44,10 @@
                                     </thead>
                                     <tbody>
                                         @forelse ($tiles as $tile)
-                                            <tr @class(["position-relative", "text-bg-danger" => $tile->tile_images != ''])>
+                                            <tr @class([
+                                                'position-relative',
+                                                'text-bg-danger' => $tile->tile_images != '',
+                                            ])>
                                                 <td>
                                                     {{ $tile->serial }}
                                                 </td>
@@ -62,9 +65,9 @@
                                                 </td>
                                                 <td>
                                                     {{ $tile->map_image_needed ? 'Yes' : 'No' }}
-                                                    <a class="stretched-link"
-                                                        data-bs-toggle="collapse" href="#row-collapse-{{ $tile->id }}"
-                                                        role="button" aria-expanded="false"
+                                                    <a class="stretched-link" data-bs-toggle="collapse"
+                                                        href="#row-collapse-{{ $tile->id }}" role="button"
+                                                        aria-expanded="false"
                                                         aria-controls="row-collapse-{{ $tile->id }}"></a>
                                                 </td>
                                             </tr>
@@ -74,27 +77,43 @@
                                                         <div class="text-center">
                                                             Upload Tile Image
                                                         </div>
-                                                        <input type="file" class="bs-fileinput" multiple />
+                                                        <input type="file" class="bs-fileinput" multiple name="tile_images[]"
+                                                            data-upload-url="{{ route('tiles.update.images', $tile) }}"
+                                                            data-delete-url="{{ route('tiles.destroy.imagemap', $tile) }}"
+                                                            data-initial-preview="{{ $tile->initialPreview() }}"
+                                                            data-initial-preview-config="{{ $tile->initialPreviewConfig() }}" />
                                                     </td>
                                                     <td colspan="3">
                                                         <div class="text-center">
                                                             Upload Map Image
                                                         </div>
-                                                        <input type="file" class="bs-fileinput" multiple />
+                                                        <input type="file" class="bs-fileinput" multiple name="tile_maps[]"
+                                                            data-upload-url="{{ route('tiles.update.maps', $tile) }}"
+                                                            data-delete-url="{{ route('tiles.destroy.imagemap', $tile) }}"
+                                                            data-initial-preview="{{ $tile->initialPreview('map') }}"
+                                                            data-initial-preview-config="{{ $tile->initialPreviewConfig('map') }}" />
                                                     </td>
                                                 @elseif ($tile->tile_image_needed)
                                                     <td colspan="100%">
                                                         <div class="text-center">
                                                             Upload Tile Image
                                                         </div>
-                                                        <input type="file" class="bs-fileinput" multiple />
+                                                        <input type="file" class="bs-fileinput" multiple name="tile_images[]"
+                                                            data-upload-url="{{ route('tiles.update.images', $tile) }}"
+                                                            data-delete-url="{{ route('tiles.destroy.imagemap', $tile) }}"
+                                                            data-initial-preview="{{ $tile->initialPreview() }}"
+                                                            data-initial-preview-config="{{ $tile->initialPreviewConfig() }}" />
                                                     </td>
                                                 @elseif ($tile->map_image_needed)
                                                     <td colspan="100%">
                                                         <div class="text-center">
                                                             Upload Map Image
                                                         </div>
-                                                        <input type="file" class="bs-fileinput" multiple />
+                                                        <input type="file" class="bs-fileinput" multiple name="tile_maps[]"
+                                                            data-upload-url="{{ route('tiles.update.maps', $tile) }}"
+                                                            data-delete-url="{{ route('tiles.destroy.imagemap', $tile) }}"
+                                                            data-initial-preview="{{ $tile->initialPreview('map') }}"
+                                                            data-initial-preview-config="{{ $tile->initialPreviewConfig('map') }}" />
                                                     </td>
                                                 @endif
                                             </tr>

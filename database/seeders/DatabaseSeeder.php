@@ -25,23 +25,5 @@ class DatabaseSeeder extends Seeder
             'email' => 'engrsakibcse@gmail.com',
             'cid' => '1233',
         ])->assignRole('admin');
-
-        \App\Models\User::factory()->create([
-            'name' => 'Shopee Tiles',
-            'email' => 'com1@gmail.com',
-            'cid' => '1234',
-        ])->assignRole('company');
-
-        \App\Models\User::factory()->create([
-            'name' => 'AB Ceramics',
-            'email' => 'com2@gmail.com',
-            'cid' => '1235',
-        ])->assignRole('company');
-
-        \App\Models\User::factory()->create([
-            'name' => 'AC Ceramics',
-            'email' => 'com3@gmail.com',
-            'cid' => '1236',
-        ])->assignRole('company');
     }
 }

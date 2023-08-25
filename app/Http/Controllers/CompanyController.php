@@ -40,6 +40,26 @@ class CompanyController extends Controller
     public function store(Request $request)
     {
         //
+        // dd($request);
+        $companyDataFile = $request->file('companyfile');
+
+        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+        $spreadsheet = $reader->load($companyDataFile);
+        $worksheet = $spreadsheet->getActiveSheet();
+
+        foreach ($worksheet->getRowIterator(2) as $row) {
+            $rowData = [];
+            foreach ($row->getCellIterator() as $cell) {
+                $rowData[] = $cell->getValue();
+            }
+            \App\Models\User::factory()->create([
+                'name' => $rowData[2],
+                'email' => $rowData[1],
+                'cid' => $rowData[0],
+            ])->assignRole('company');
+        }
+
+        return redirect()->route('companies.index')->with('status', 'Companies added successfully.');
     }
 
     /**

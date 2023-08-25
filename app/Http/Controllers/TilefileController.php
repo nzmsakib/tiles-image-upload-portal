@@ -67,7 +67,7 @@ class TilefileController extends Controller
     {
         //
         // dd($request);
-        $assinee_id = $request->user;
+        $assignee_id = $request->user;
         $tilefiles = $request->file('tilefiles');
 
         foreach ($tilefiles as $tf) {
@@ -86,7 +86,7 @@ class TilefileController extends Controller
                 'uid' => $fileUid,
                 'path' => $path,
                 'created_by' => $user->id,
-                'assigned_to' => $assinee_id,
+                'assigned_to' => $assignee_id,
                 'reference' => $request->reference ?? null,
             ]);
 
@@ -110,7 +110,7 @@ class TilefileController extends Controller
             }
         }
 
-        return redirect()->route('tilefiles.index')->with('status', 'Tilefile uploaded successfully');
+        return redirect()->route('tilefiles.index', ['assignee' => $assignee_id])->with('status', 'Tilefile uploaded successfully');
     }
 
     /**
