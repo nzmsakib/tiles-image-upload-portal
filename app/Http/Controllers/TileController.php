@@ -94,6 +94,7 @@ class TileController extends Controller
                 'name' => $originalNameWithoutExtension,
                 'type' => 'image',
                 'path' => $uniqueName . '.' . $ext,
+                'extension' => $ext,
             ]);
         }
         return response()->json([
@@ -122,6 +123,7 @@ class TileController extends Controller
                 'name' => $originalNameWithoutExtension,
                 'type' => 'map',
                 'path' => $uniqueName . '.' . $ext,
+                'extension' => $ext,
             ]);
         }
         return response()->json([

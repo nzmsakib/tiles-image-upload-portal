@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('name');
             $table->enum('type', ['image', 'map']);
             $table->string('path');
+            $table->string('extension');
             $table->timestamps();
         });
     }

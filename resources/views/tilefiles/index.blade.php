@@ -25,7 +25,10 @@
                                             File Name
                                         </th>
                                         <th scope="col">
-                                            Status
+                                            Images Uploaded
+                                        </th>
+                                        <th scope="col">
+                                            Maps Uploaded
                                         </th>
                                         <th scope="col">
                                             Reference
@@ -37,9 +40,9 @@
                                             Created By
                                         </th>
                                         @role('admin')
-                                        <th scope="col">
-                                            Assigned To
-                                        </th>
+                                            <th scope="col">
+                                                Assigned To
+                                            </th>
                                         @endrole
                                         <th scope="col">
                                             Actions
@@ -59,12 +62,34 @@
                                                 {{ $tilefile->name }}
                                             </td>
                                             <td @class([
-                                                'bg-opacity-50',
-                                                'text-bg-danger' => $tilefile->status == 'pending',
-                                                'text-bg-warning' => $tilefile->status == 'processing',
-                                                'text-bg-success' => $tilefile->status == 'completed',
+                                                'text-bg-danger' =>
+                                                    $tilefile->requiredImageCount() > 0 &&
+                                                    $tilefile->completedImageCount() == 0,
+                                                'text-bg-warning' =>
+                                                    $tilefile->requiredImageCount() > 0 &&
+                                                    $tilefile->completedImageCount() > 0 &&
+                                                    $tilefile->completedImageCount() < $tilefile->requiredImageCount(),
+                                                'text-bg-success' =>
+                                                    $tilefile->requiredImageCount() > 0 &&
+                                                    $tilefile->completedImageCount() == $tilefile->requiredImageCount(),
                                             ])>
-                                                {{ $tilefile->status }}
+                                                {{ $tilefile->completedImageCount() }} out of
+                                                {{ $tilefile->requiredImageCount() }}
+                                            </td>
+                                            <td @class([
+                                                'text-bg-danger' =>
+                                                    $tilefile->requiredMapCount() > 0 &&
+                                                    $tilefile->completedMapCount() == 0,
+                                                'text-bg-warning' =>
+                                                    $tilefile->requiredMapCount() > 0 &&
+                                                    $tilefile->completedMapCount() > 0 &&
+                                                    $tilefile->completedMapCount() < $tilefile->requiredMapCount(),
+                                                'text-bg-success' =>
+                                                    $tilefile->requiredMapCount() > 0 &&
+                                                    $tilefile->completedMapCount() == $tilefile->requiredMapCount(),
+                                            ])>
+                                                {{ $tilefile->completedMapCount() }} out of
+                                                {{ $tilefile->requiredMapCount() }}
                                             </td>
                                             <td>
                                                 {{ $tilefile->reference }}
@@ -76,9 +101,9 @@
                                                 {{ $tilefile->creator->name ?? '' }}
                                             </td>
                                             @role('admin')
-                                            <td>
-                                                {{ $tilefile->assignee->name ?? 'Not Assigned' }}
-                                            </td>
+                                                <td>
+                                                    {{ $tilefile->assignee->name ?? 'Not Assigned' }}
+                                                </td>
                                             @endrole
                                             <td>
                                                 <a href="{{ route('tilefiles.upload', $tilefile) }}"
@@ -87,17 +112,17 @@
                                                 </a>
 
                                                 @role('admin')
-                                                <a href="{{ route('tilefiles.download', $tilefile) }}"
-                                                    class="btn btn-sm btn-primary">
-                                                    Create ZIP
-                                                </a>
+                                                    <a href="{{ route('tilefiles.zip', $tilefile) }}"
+                                                        class="btn btn-sm btn-primary">
+                                                        Create ZIP
+                                                    </a>
 
-                                                <form action="{{ route('tilefiles.destroy', $tilefile->id) }}"
-                                                    method="POST" class="d-inline">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                                                </form>
+                                                    <form action="{{ route('tilefiles.destroy', $tilefile->id) }}"
+                                                        method="POST" class="d-inline">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                                    </form>
                                                 @endrole
                                             </td>
                                         </tr>

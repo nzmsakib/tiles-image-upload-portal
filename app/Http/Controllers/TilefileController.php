@@ -110,7 +110,7 @@ class TilefileController extends Controller
             }
         }
 
-        return redirect()->route('tilefiles.index', ['assignee' => $assignee_id])->with('status', 'Tilefile uploaded successfully');
+        return redirect()->back()->with('status', 'Tilefile uploaded successfully');
     }
 
     /**
@@ -130,10 +130,11 @@ class TilefileController extends Controller
      * @param  \App\Models\Tilefile  $tilefile
      * @return \Illuminate\Http\Response
      */
-    public function download(Tilefile $tilefile)
+    public function zip(Tilefile $tilefile)
     {
         //
         // read the excel file
+        // dd($tilefile);
         $path = storage_path('app/' . $tilefile->path);
         $dir = dirname($path);
         $zipPath = $dir . '/' . $tilefile->uid . '.zip';
@@ -141,28 +142,24 @@ class TilefileController extends Controller
         // Create a zip archive
         $zip = new \ZipArchive();
         if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === TRUE) {
+            $tiles = $tilefile->tiles()->get();
 
-            // Add all the files in the directory
-            $files = new \RecursiveIteratorIterator(
-                new \RecursiveDirectoryIterator($dir),
-                \RecursiveIteratorIterator::LEAVES_ONLY
-            );
-
-            foreach ($files as $name => $file) {
-                // Skip directories (they would be added automatically)
-                if (!$file->isDir()) {
-                    // Get real and relative path for current file
-                    $filePath = $file->getRealPath();
-
-                    // do not add any files inside the root directory
-                    if (realpath(dirname($filePath)) == realpath(dirname($zipPath))) {
-                        continue;
-                    }
-
-                    $relativePath = substr($filePath, strlen($dir) + 1);
-
-                    // Add current file to archive
-                    $zip->addFile($filePath, $relativePath);
+            foreach ($tiles as $tile) {
+                $tilePath = $dir . '/' . $tile->size . '/' . $tile->finish . '/' . $tile->tilename;
+                $zip->addEmptyDir($tile->size . '/' . $tile->finish . '/' . $tile->tilename);
+                $tileImages = $tile->files()->where('type', 'image')->get();
+                $n = 1;
+                foreach ($tileImages as $tileImage) {
+                    $imgFile = storage_path('app/public/files/' . $tileImage->path);
+                    $zip->addFile($imgFile, $tile->size . '/' . $tile->finish . '/' . $tile->tilename . '/' . $tile->tilename . ' F' . $n . '.' . $tileImage->extension);
+                    $n++;
+                }
+                $mapImages = $tile->files()->where('type', 'map')->get();
+                $n = 1;
+                foreach ($mapImages as $mapImage) {
+                    $mapFile = storage_path('app/public/files/' . $mapImage->path);
+                    $zip->addFile($mapFile, $tile->size . '/' . $tile->finish . '/' . $tile->tilename . '/MAPS/' . $tile->tilename . ' F' . $n . '.' . $mapImage->extension);
+                    $n++;
                 }
             }
 
@@ -182,70 +179,11 @@ class TilefileController extends Controller
     public function upload(Request $request, Tilefile $tilefile)
     {
         //
-        $perPage = 2;
+        $perPage = 10;
 
         $tiles = $tilefile->tiles()->paginate($perPage);
 
         return view('tilefiles.upload', compact('tilefile', 'tiles'));
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Tilefile  $tilefile
-     * @return \Illuminate\Http\Response
-     */
-    public function uploadStore(Request $request, Tilefile $tilefile)
-    {
-        //
-        // read the excel file
-        $path = storage_path('app/' . $tilefile->path);
-        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
-        $spreadsheet = $reader->load($path);
-        $worksheet = $spreadsheet->getActiveSheet();
-
-        $totalRequired = 0;
-        $totalUploaded = 0;
-
-        // Get the data
-        foreach ($worksheet->getRowIterator(2) as $row) {
-            $rowData = [];
-            foreach ($row->getCellIterator() as $cell) {
-                $rowData[] = $cell->getValue();
-            }
-            if ($request->hasFile('tileimage-' . $rowData[0])) {
-                $ext = $request->file('tileimage-' . $rowData[0])->getClientOriginalExtension();
-                $request->file('tileimage-' . $rowData[0])->storeAs('public/tilefiles/' . $tilefile->uid . '/' . $tilefile->uid . '/' . $rowData[2] . '/' . $rowData[3] . '/' . $rowData[1], $rowData[1] . '.' . $ext);
-            }
-            if ($request->hasFile('tilemap-' . $rowData[0])) {
-                $ext = $request->file('tilemap-' . $rowData[0])->getClientOriginalExtension();
-                $request->file('tilemap-' . $rowData[0])->storeAs('public/tilefiles/' . $tilefile->uid . '/' . $tilefile->uid . '/' . $rowData[2] . '/' . $rowData[3] . '/' . $rowData[1] . '/MAPS', $rowData[1] . '.' . $ext);
-            }
-            $tileImagePath = storage_path('app/public/tilefiles/' . $tilefile->uid . '/' . $tilefile->uid . '/' . $rowData[2] . '/' . $rowData[3] . '/' . $rowData[1] . '/' . $rowData[1] . '.jpg');
-            $tileMapsPath = storage_path('app/public/tilefiles/' . $tilefile->uid . '/' . $tilefile->uid . '/' . $rowData[2] . '/' . $rowData[3] . '/' . $rowData[1] . '/MAPS/' . $rowData[1] . '.jpg');
-            if (file_exists($tileImagePath)) {
-                $totalUploaded++;
-            }
-            if (file_exists($tileMapsPath)) {
-                $totalUploaded++;
-            }
-            if ($rowData[count($rowData)-2] == 'Yes') {
-                $totalRequired++;
-            }
-            if ($rowData[count($rowData)-1] == 'Yes') {
-                $totalRequired++;
-            }
-        }
-
-        if ($totalUploaded < $totalRequired) {
-            $tilefile->status = 'processing';
-        } else {
-            $tilefile->status = 'completed';
-        }
-        $tilefile->save();
-
-        return redirect()->back()->with('status', 'Tile photos uploaded successfully');
     }
 
     /**

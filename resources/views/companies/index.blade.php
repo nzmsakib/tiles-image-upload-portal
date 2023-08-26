@@ -72,7 +72,7 @@
 
                                                 <a href="#" class="btn btn-sm btn-primary"
                                                     onclick="event.preventDefault(); document.getElementById('tilefiles-{{ $company->id }}').click();">
-                                                    Upload
+                                                    Upload Tilefile
                                                 </a>
                                                 <form action="{{ route('tilefiles.store') }}" method="POST"
                                                     enctype="multipart/form-data" class="d-none"

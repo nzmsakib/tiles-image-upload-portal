@@ -14,6 +14,7 @@ class File extends Model
         'type',
         'tile_id',
         'path',
+        'extension',
     ];
 
     public function tile()

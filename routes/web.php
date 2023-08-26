@@ -32,8 +32,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/tiles/{tile}/maps', [App\Http\Controllers\TileController::class, 'updateMaps'])->name('tiles.update.maps');
     Route::post('/tiles/{tile}/destroy-imagemap', [App\Http\Controllers\TileController::class, 'destroyImageMap'])->name('tiles.destroy.imagemap');
 
-    Route::get('/tilefiles/{tilefile}/make-zip', [App\Http\Controllers\TilefileController::class, 'download'])->name('tilefiles.download');
+    Route::get('/tilefiles/{tilefile}/make-zip', [App\Http\Controllers\TilefileController::class, 'zip'])->name('tilefiles.zip');
 
     Route::get('/tilefiles/{tilefile:uid}/upload', [App\Http\Controllers\TilefileController::class, 'upload'])->name('tilefiles.upload');
-    Route::post('/tilefiles/{tilefile:uid}/upload', [App\Http\Controllers\TilefileController::class, 'uploadStore'])->name('tilefiles.upload.store');
 });

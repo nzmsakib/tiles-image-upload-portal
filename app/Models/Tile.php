@@ -49,4 +49,14 @@ class Tile extends Model
         });
         return $configs;
     }
+
+    public function imageCount()
+    {
+        return $this->files()->where('type', 'image')->count();
+    }
+
+    public function mapCount()
+    {
+        return $this->files()->where('type', 'map')->count();
+    }
 }

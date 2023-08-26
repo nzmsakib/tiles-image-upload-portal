@@ -33,4 +33,28 @@ class Tilefile extends Model
     {
         return $this->hasMany(Tile::class);
     }
+
+    public function requiredImageCount()
+    {
+        return $this->tiles()->where('tile_image_needed', true)->count();
+    }
+
+    public function requiredMapCount()
+    {
+        return $this->tiles()->where('map_image_needed', true)->count();
+    }
+
+    public function completedImageCount()
+    {
+        return $this->tiles()->where('tile_image_needed', true)->whereHas('files', function ($query) {
+            $query->where('type', 'image');
+        })->count();
+    }
+
+    public function completedMapCount()
+    {
+        return $this->tiles()->where('map_image_needed', true)->whereHas('files', function ($query) {
+            $query->where('type', 'map');
+        })->count();
+    }
 }
