@@ -34,27 +34,25 @@ class Tilefile extends Model
         return $this->hasMany(Tile::class);
     }
 
-    public function requiredImageCount()
+    public function requiredImageCount($type = 'image')
     {
-        return $this->tiles()->where('tile_image_needed', true)->count();
+        $typeColumns = [
+            'image' => 'tile_image_needed',
+            'carving_map' => 'carving_map_needed',
+            'bump_map' => 'bump_map_needed',
+        ];
+        return $this->tiles()->where($typeColumns[$type], true)->count();
     }
 
-    public function requiredMapCount()
+    public function completedImageCount($type = 'image')
     {
-        return $this->tiles()->where('map_image_needed', true)->count();
-    }
-
-    public function completedImageCount()
-    {
-        return $this->tiles()->where('tile_image_needed', true)->whereHas('files', function ($query) {
-            $query->where('type', 'image');
-        })->count();
-    }
-
-    public function completedMapCount()
-    {
-        return $this->tiles()->where('map_image_needed', true)->whereHas('files', function ($query) {
-            $query->where('type', 'map');
+        $typeColumns = [
+            'image' => 'tile_image_needed',
+            'carving_map' => 'carving_map_needed',
+            'bump_map' => 'bump_map_needed',
+        ];
+        return $this->tiles()->where($typeColumns[$type], true)->whereHas('files', function ($query) use ($type) {
+            $query->where('type', $type);
         })->count();
     }
 }

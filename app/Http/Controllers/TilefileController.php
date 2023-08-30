@@ -4,9 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Tilefile;
 use App\Models\User;
+use Aws\S3\S3Client;
 use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Storage;
+use League\Flysystem\Filesystem;
+use League\Flysystem\ZipArchive\ZipArchiveAdapter;
+use League\Flysystem\ZipArchive\FilesystemZipArchiveProvider;
+use ZipArchive;
 
 class TilefileController extends Controller
 {
@@ -41,7 +45,7 @@ class TilefileController extends Controller
         if (request()->has('creator')) {
             $tilefiles = $tilefiles->where('created_by', request()->creator);
         }
-        
+
         $tilefiles = $tilefiles->orderBy('created_at', 'desc')->paginate(2);
 
         return view('tilefiles.index', compact('tilefiles'));
@@ -105,7 +109,8 @@ class TilefileController extends Controller
                     'size' => $rowData[2],
                     'finish' => $rowData[3],
                     'tile_image_needed' => $rowData[4] == 'Yes' ? true : false,
-                    'map_image_needed' => $rowData[5] == 'Yes' ? true : false,
+                    'carving_map_needed' => $rowData[5] == 'Yes' ? true : false,
+                    'bump_map_needed' => $rowData[6] == 'Yes' ? true : false,
                 ]);
             }
         }
@@ -133,40 +138,46 @@ class TilefileController extends Controller
     public function zip(Tilefile $tilefile)
     {
         //
-        // read the excel file
-        // dd($tilefile);
-        $path = storage_path('app/' . $tilefile->path);
-        $dir = dirname($path);
-        $zipPath = $dir . '/' . $tilefile->uid . '.zip';
+        // Initialize S3 client
+        $s3 = new S3Client([
+            'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
+            'version' => 'latest',
+            'credentials' => [
+                'key' => env('AWS_ACCESS_KEY_ID', 'your-aws-key'),
+                'secret' => env('AWS_SECRET_ACCESS_KEY', 'your-aws-secret'),
+            ],
+        ]);
 
-        // Create a zip archive
-        $zip = new \ZipArchive();
-        if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === TRUE) {
-            $tiles = $tilefile->tiles()->get();
+        // Fetch list of objects (files) in the S3 bucket and prefix
+        $objects = $s3->listObjects([
+            'Bucket' => env('AWS_BUCKET', 'your-bucket-name'),
+            'Prefix' => 'tiles/tile_portal/' . $tilefile->assignee->cid . '/' . $tilefile->uid . '/',
+        ]);
 
-            foreach ($tiles as $tile) {
-                $tilePath = $dir . '/' . $tile->size . '/' . $tile->finish . '/' . $tile->tilename;
-                $zip->addEmptyDir($tile->size . '/' . $tile->finish . '/' . $tile->tilename);
-                $tileImages = $tile->files()->where('type', 'image')->get();
-                $n = 1;
-                foreach ($tileImages as $tileImage) {
-                    $imgFile = storage_path('app/public/files/' . $tileImage->path);
-                    $zip->addFile($imgFile, $tile->size . '/' . $tile->finish . '/' . $tile->tilename . '/' . $tile->tilename . ' F' . $n . '.' . $tileImage->extension);
-                    $n++;
-                }
-                $mapImages = $tile->files()->where('type', 'map')->get();
-                $n = 1;
-                foreach ($mapImages as $mapImage) {
-                    $mapFile = storage_path('app/public/files/' . $mapImage->path);
-                    $zip->addFile($mapFile, $tile->size . '/' . $tile->finish . '/' . $tile->tilename . '/MAPS/' . $tile->tilename . ' F' . $n . '.' . $mapImage->extension);
-                    $n++;
-                }
-            }
+        // Create a temporary zip file
+        $zipFileName = "{$tilefile->uid}.zip";
+        $zipFilePath = storage_path("app/{$zipFileName}");
+        $zip = new ZipArchive;
+        $zip->open($zipFilePath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
 
-            $zip->close();
+        foreach ($objects['Contents'] as $object) {
+            // Get the relative path within the bucket
+            $relativePath = substr($object['Key'], strlen("tiles/tile_portal/{$tilefile->assignee->cid}/{$tilefile->uid}/"));
+
+            // Get the file content from S3
+            $fileContent = $s3->getObject([
+                'Bucket' => env('AWS_BUCKET', 'your-bucket-name'),
+                'Key' => $object['Key'],
+            ])['Body'];
+
+            // Add the file to the zip archive with its relative path
+            $zip->addFromString($relativePath, $fileContent);
         }
 
-        return redirect()->back()->with('status', 'Tilefile ZIP created successfully');
+        $zip->close();
+
+        // Send the zip file as a response
+        return response()->download($zipFilePath)->deleteFileAfterSend(true);
     }
 
     /**

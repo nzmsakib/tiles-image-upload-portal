@@ -8,6 +8,7 @@
                 uploadExtraData: {
                     // Get CSRF Token from meta tag
                     _token: document.querySelector('meta[name="csrf-token"]').content,
+                    image_type: field.attributes['data-type']?.value,
                 },
                 deleteUrl: field.attributes['data-delete-url'].value,
                 deleteExtraData: {

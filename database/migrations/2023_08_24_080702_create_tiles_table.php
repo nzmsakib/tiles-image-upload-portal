@@ -21,7 +21,8 @@ return new class extends Migration
             $table->string('size');
             $table->string('finish');
             $table->boolean('tile_image_needed')->default(true);
-            $table->boolean('map_image_needed')->default(true);
+            $table->boolean('carving_map_needed')->default(true);
+            $table->boolean('bump_map_needed')->default(true);
             $table->timestamps();
         });
     }

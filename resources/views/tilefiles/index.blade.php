@@ -28,7 +28,10 @@
                                             Images Uploaded
                                         </th>
                                         <th scope="col">
-                                            Maps Uploaded
+                                            Carving Maps Uploaded
+                                        </th>
+                                        <th scope="col">
+                                            Bump Maps Uploaded
                                         </th>
                                         <th scope="col">
                                             Reference
@@ -78,18 +81,33 @@
                                             </td>
                                             <td @class([
                                                 'text-bg-danger' =>
-                                                    $tilefile->requiredMapCount() > 0 &&
-                                                    $tilefile->completedMapCount() == 0,
+                                                    $tilefile->requiredImageCount('carving_map') > 0 &&
+                                                    $tilefile->completedImageCount('carving_map') == 0,
                                                 'text-bg-warning' =>
-                                                    $tilefile->requiredMapCount() > 0 &&
-                                                    $tilefile->completedMapCount() > 0 &&
-                                                    $tilefile->completedMapCount() < $tilefile->requiredMapCount(),
+                                                    $tilefile->requiredImageCount('carving_map') > 0 &&
+                                                    $tilefile->completedImageCount('carving_map') > 0 &&
+                                                    $tilefile->completedImageCount('carving_map') < $tilefile->requiredImageCount('carving_map'),
                                                 'text-bg-success' =>
-                                                    $tilefile->requiredMapCount() > 0 &&
-                                                    $tilefile->completedMapCount() == $tilefile->requiredMapCount(),
+                                                    $tilefile->requiredImageCount('carving_map') > 0 &&
+                                                    $tilefile->completedImageCount('carving_map') == $tilefile->requiredImageCount('carving_map'),
                                             ])>
-                                                {{ $tilefile->completedMapCount() }} out of
-                                                {{ $tilefile->requiredMapCount() }}
+                                                {{ $tilefile->completedImageCount('carving_map') }} out of
+                                                {{ $tilefile->requiredImageCount('carving_map') }}
+                                            </td>
+                                            <td @class([
+                                                'text-bg-danger' =>
+                                                    $tilefile->requiredImageCount('bump_map') > 0 &&
+                                                    $tilefile->completedImageCount('bump_map') == 0,
+                                                'text-bg-warning' =>
+                                                    $tilefile->requiredImageCount('bump_map') > 0 &&
+                                                    $tilefile->completedImageCount('bump_map') > 0 &&
+                                                    $tilefile->completedImageCount('bump_map') < $tilefile->requiredImageCount('bump_map'),
+                                                'text-bg-success' =>
+                                                    $tilefile->requiredImageCount('bump_map') > 0 &&
+                                                    $tilefile->completedImageCount('bump_map') == $tilefile->requiredImageCount('bump_map'),
+                                            ])>
+                                                {{ $tilefile->completedImageCount('bump_map') }} out of
+                                                {{ $tilefile->requiredImageCount('bump_map') }}
                                             </td>
                                             <td>
                                                 {{ $tilefile->reference }}

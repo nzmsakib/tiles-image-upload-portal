@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('tile_id')->constrained()->onDelete('cascade');
             $table->string('name');
-            $table->enum('type', ['image', 'map']);
+            $table->enum('type', ['image', 'carving_map', 'bump_map']);
             $table->string('path');
             $table->string('extension');
             $table->timestamps();

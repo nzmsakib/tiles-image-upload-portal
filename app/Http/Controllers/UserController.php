@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
-class CompanyController extends Controller
+class UserController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -16,9 +17,17 @@ class CompanyController extends Controller
     {
         //
         $user = User::find(auth()->user()->id);
-        $companies = User::where('id', '!=', $user->id)->orderBy('id', 'desc')->paginate(10);
+        $users = User::query();
 
-        return view('companies.index', compact('companies'));
+        if (request()->has('role') && request('role') != '' && request('role') != 'all') {
+            $users = $users->role(request('role'));
+        }
+
+        $users = $users->orderBy('id', 'desc')->paginate(10);
+        
+        $roles = \Spatie\Permission\Models\Role::all();
+
+        return view('users.index', compact('users', 'roles'));
     }
 
     /**
@@ -41,7 +50,19 @@ class CompanyController extends Controller
     {
         //
         // dd($request);
-        $companyDataFile = $request->file('companyfile');
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function import(Request $request)
+    {
+        //
+        // dd($request);
+        $companyDataFile = $request->file('userfile');
 
         $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
         $spreadsheet = $reader->load($companyDataFile);
@@ -56,10 +77,10 @@ class CompanyController extends Controller
                 'name' => $rowData[2],
                 'email' => $rowData[1],
                 'cid' => $rowData[0],
-            ])->assignRole('company');
+            ])->assignRole($rowData[3] ?? 'user');
         }
 
-        return redirect()->route('companies.index')->with('status', 'Companies added successfully.');
+        return redirect()->back()->with('status', 'Users imported successfully.');
     }
 
     /**
@@ -82,6 +103,8 @@ class CompanyController extends Controller
     public function edit(User $user)
     {
         //
+        $roles = \Spatie\Permission\Models\Role::all();
+        return view('users.edit', compact('user', 'roles'));
     }
 
     /**
@@ -94,6 +117,28 @@ class CompanyController extends Controller
     public function update(Request $request, User $user)
     {
         //
+        // dd($request->all());
+        if ($request->name != $user->name) {
+            $user->name = $request->name;
+        }
+
+        if ($request->email != $user->email) {
+            $user->email = $request->email;
+        }
+
+        if ($request->cid != $user->cid) {
+            $user->cid = $request->cid;
+        }
+
+        if ($request->password != '') {
+            $user->password = Hash::make($request->password);
+        }
+        
+        $roles = $request->roles ?? [];
+        $user->syncRoles($roles);
+
+        $user->save();
+        return redirect()->back()->with('status', 'User updated successfully.');
     }
 
     /**

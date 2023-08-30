@@ -32,9 +32,9 @@ class LoginController extends Controller
     {
         $user = User::find(auth()->user()->id);
         if ($user->hasRole('admin')) {
-            return '/companies';
+            return route('users.index');
         } else {
-            return '/tilefiles';
+            return route('tilefiles.index');
         }
     }
 

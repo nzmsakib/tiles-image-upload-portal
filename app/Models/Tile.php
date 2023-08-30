@@ -16,7 +16,8 @@ class Tile extends Model
         'size',
         'finish',
         'tile_image_needed',
-        'map_image_needed',
+        'carving_map_needed',
+        'bump_map_needed',
     ];
 
     public function tilefile()
@@ -32,7 +33,7 @@ class Tile extends Model
     public function initialPreview($type = 'image')
     {
         $paths = $this->files()->where('type', $type)->get()->map(function ($file) {
-            return asset('storage/files/' . $file->path);
+            return $file->path;
         });
         return $paths;
     }
@@ -43,20 +44,15 @@ class Tile extends Model
             return [
                 'caption' => $file->name,
                 'size' => $file->size,
-                'url' => route('tiles.destroy.imagemap', $this),
+                'url' => route('tiles.destroy.images', $this),
                 'key' => $file->id,
             ];
         });
         return $configs;
     }
 
-    public function imageCount()
+    public function imageCount($type = 'image')
     {
-        return $this->files()->where('type', 'image')->count();
-    }
-
-    public function mapCount()
-    {
-        return $this->files()->where('type', 'map')->count();
+        return $this->files()->where('type', $type)->count();
     }
 }

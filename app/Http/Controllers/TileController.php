@@ -84,47 +84,49 @@ class TileController extends Controller
     {
         //
         $tile_images = $request->file('tile_images') ?? [];
+        $image_type = $request->get('image_type') ?? 'image';
 
         foreach ($tile_images as $tile_image) {
             $ext = $tile_image->getClientOriginalExtension();
-            $uniqueName = uniqid('img-', true);
-            $tile_image->storeAs('public/files', $uniqueName . '.' . $ext);
             $originalNameWithoutExtension = pathinfo($tile_image->getClientOriginalName(), PATHINFO_FILENAME);
-            $tile->files()->create([
-                'name' => $originalNameWithoutExtension,
-                'type' => 'image',
-                'path' => $uniqueName . '.' . $ext,
-                'extension' => $ext,
-            ]);
-        }
-        return response()->json([
-            'message' => 'Images updated successfully',
-        ]);
-    }
+            $filePath = 'tiles/tile_portal/' . $tile->tilefile->assignee->cid . '/' . $tile->tilefile->uid . '/' . $tile->size . '/' . $tile->finish . '/' . $tile->tilename . '/' . $image_type . '/' . $tile->tilename . ' F' . ($tile->imageCount() + 1) . '.' . $ext;
+            // tiles/tile_portal/10040/wdvdwjchv/60x120/glossy/odg ultra brown/image/odg ultra brown F1.jpg
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Tile  $tile
-     * @return \Illuminate\Http\Response
-     */
-    public function updateMaps(Request $request, Tile $tile)
-    {
-        //
-        $tile_maps = $request->file('tile_maps') ?? [];
+            $uploadSuccess = Storage::disk('s3')->put($filePath, file_get_contents($tile_image));
 
-        foreach ($tile_maps as $tile_map) {
-            $ext = $tile_map->getClientOriginalExtension();
-            $uniqueName = uniqid('img-', true);
-            $tile_map->storeAs('public/files', $uniqueName . '.' . $ext);
-            $originalNameWithoutExtension = pathinfo($tile_map->getClientOriginalName(), PATHINFO_FILENAME);
-            $tile->files()->create([
-                'name' => $originalNameWithoutExtension,
-                'type' => 'map',
-                'path' => $uniqueName . '.' . $ext,
-                'extension' => $ext,
-            ]);
+            if ($uploadSuccess) {
+                // $fileLink = Storage::disk('s3')->get($filePath);
+                // $headers = [
+                //     'Content-Type' => 'application/pdf',
+                //     'Content-Disposition' => 'attachment; filename="document.pdf"',
+                //     'X-Message' => 'File uploaded successfully',
+                // ];
+                // return Response::streamDownload(function () use ($fileLink) {
+                //     echo $fileLink;
+                // }, 'document.pdf', $headers);
+                Storage::disk('s3')->setVisibility($filePath, 'public');
+                $upoaded_file = Storage::disk('s3')->url($filePath);
+                $tile->files()->create([
+                    'name' => $originalNameWithoutExtension,
+                    'type' => $image_type,
+                    'path' => $upoaded_file,
+                    'extension' => $ext,
+                ]);
+            } else {
+                return response()->json(['error' => 'Failed to upload file']);
+            }
+
+
+            // $ext = $tile_image->getClientOriginalExtension();
+            // $uniqueName = uniqid('img-', true);
+            // $tile_image->storeAs('public/files', $uniqueName . '.' . $ext);
+            // $originalNameWithoutExtension = pathinfo($tile_image->getClientOriginalName(), PATHINFO_FILENAME);
+            // $tile->files()->create([
+            //     'name' => $originalNameWithoutExtension,
+            //     'type' => 'image',
+            //     'path' => $uniqueName . '.' . $ext,
+            //     'extension' => $ext,
+            // ]);
         }
         return response()->json([
             'message' => 'Images updated successfully',
@@ -149,7 +151,7 @@ class TileController extends Controller
      * @param  \App\Models\Tile  $tile
      * @return \Illuminate\Http\Response
      */
-    public function destroyImageMap(Request $request, Tile $tile)
+    public function destroyImages(Request $request, Tile $tile)
     {
         //
         $file_id = $request->get('key');
